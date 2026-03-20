@@ -1,0 +1,104 @@
+/**
+ * 持仓分布组件样式
+ * 机构级金融配色方案
+ */
+
+$citic-blue: #1c2a44;
+$bosera-gold: #c5a368;
+$data-red: #e63946;
+$data-green: #2a9d8f;
+$bg-cool-gray: #f8fafc;
+$border-light: #e2e8f0;
+$text-main: #1e293b;
+$text-muted: #64748b;
+
+.portfolio-section {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 40rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+  margin-bottom: 32rpx;
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32rpx;
+    padding-bottom: 24rpx;
+    border-bottom: 2rpx solid $border-light;
+
+    .section-title {
+      font-size: 32rpx;
+      font-weight: bold;
+      color: $citic-blue;
+    }
+
+    .concentration-tag {
+      display: flex;
+      align-items: center;
+      gap: 8rpx;
+      background: rgba($citic-blue, 0.05);
+      padding: 8rpx 16rpx;
+      border-radius: 8rpx;
+
+      .tag-label {
+        font-size: 22rpx;
+        color: $text-muted;
+      }
+
+      .tag-value {
+        font-size: 24rpx;
+        font-weight: bold;
+        color: $citic-blue;
+      }
+    }
+  }
+
+  .bar-container {
+    margin-bottom: 24rpx;
+
+    .bar-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12rpx;
+
+      .stock-name {
+        font-size: 26rpx;
+        color: $text-main;
+        font-weight: 500;
+      }
+
+      .stock-ratio {
+        font-size: 24rpx;
+        color: $text-muted;
+        font-family: monospace;
+      }
+    }
+
+    .bar-bg {
+      height: 16rpx;
+      background: $bg-cool-gray;
+      border-radius: 8rpx;
+      overflow: hidden;
+
+      .bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, $citic-blue, #3b82f6);
+        border-radius: 8rpx;
+        transition: width 0.6s ease;
+      }
+    }
+  }
+
+  .empty-state {
+    padding: 60rpx 0;
+    text-align: center;
+
+    .empty-text {
+      font-size: 26rpx;
+      color: $text-muted;
+      font-style: italic;
+    }
+  }
+}

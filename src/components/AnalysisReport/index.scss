@@ -1,0 +1,95 @@
+/**
+ * PDF 风格研报组件样式
+ * 机构级金融配色方案
+ */
+
+$citic-blue: #1c2a44;
+$bosera-gold: #c5a368;
+$data-red: #e63946;
+$text-main: #1e293b;
+$text-muted: #64748b;
+
+.report-paper {
+  background: #ffffff;
+  border-radius: 8rpx;
+  padding: 60rpx 40rpx;
+  border-top: 8rpx solid $bosera-gold;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+  position: relative;
+  margin-bottom: 40rpx;
+
+  .header-line {
+    border-bottom: 2rpx solid $citic-blue;
+    margin-bottom: 40rpx;
+  }
+
+  .report-title {
+    margin-bottom: 40rpx;
+
+    .title-text {
+      font-size: 32rpx;
+      font-weight: bold;
+      color: $citic-blue;
+      display: block;
+      margin-bottom: 16rpx;
+    }
+
+    .fund-tag {
+      font-size: 20rpx;
+      color: $bosera-gold;
+      border: 2rpx solid $bosera-gold;
+      padding: 4rpx 16rpx;
+      margin-top: 16rpx;
+      display: inline-block;
+      border-radius: 4rpx;
+    }
+  }
+
+  .report-body {
+    .content-text {
+      font-size: 28rpx;
+      line-height: 2;
+      color: $text-main;
+      text-align: justify;
+      display: block;
+    }
+  }
+
+  .footer-mark {
+    margin-top: 60rpx;
+    padding-top: 40rpx;
+    border-top: 2rpx solid $border-light;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+
+    .source-text {
+      font-size: 18rpx;
+      color: $text-muted;
+      font-family: monospace;
+    }
+
+    .stamp {
+      border: 4rpx double $data-red;
+      color: $data-red;
+      padding: 8rpx 16rpx;
+      transform: rotate(-15deg);
+      font-weight: bold;
+      opacity: 0.6;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(-15deg);
+
+      .stamp-text {
+        font-size: 24rpx;
+      }
+    }
+
+    .date-text {
+      font-size: 18rpx;
+      color: $text-muted;
+    }
+  }
+}

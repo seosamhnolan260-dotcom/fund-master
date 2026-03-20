@@ -1,0 +1,142 @@
+/**
+ * 雷达扫描加载组件样式
+ * 匹配"中信蓝"+"博时金"机构级配色
+ */
+
+$citic-blue: #1c2a44;
+$bosera-gold: #c5a368;
+
+.radar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100rpx 0;
+  background: transparent;
+
+  .radar-box {
+    position: relative;
+    width: 320rpx;
+    height: 320rpx;
+    margin-bottom: 40rpx;
+  }
+
+  .radar-circle {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2rpx solid rgba($citic-blue, 0.2);
+    overflow: hidden;
+    background: radial-gradient(circle, rgba($citic-blue, 0.05) 0%, rgba($citic-blue, 0.1) 100%);
+
+    // 内部十字线
+    &::before, &::after {
+      content: '';
+      position: absolute;
+      background: rgba($citic-blue, 0.1);
+    }
+
+    &::before {
+      width: 100%;
+      height: 2rpx;
+      top: 50%;
+      left: 0;
+    }
+
+    &::after {
+      width: 2rpx;
+      height: 100%;
+      left: 50%;
+      top: 0;
+    }
+  }
+
+  // 核心扫描动画
+  .radar-sweep {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: conic-gradient(from 0deg, transparent 270deg, rgba($bosera-gold, 0.4) 360deg);
+    animation: radarScan 2s linear infinite;
+    transform-origin: center;
+  }
+
+  // 扫描到的数据点动画
+  .dot {
+    position: absolute;
+    width: 6rpx;
+    height: 6rpx;
+    background: $bosera-gold;
+    border-radius: 50%;
+    box-shadow: 0 0 10rpx $bosera-gold;
+    opacity: 0;
+    animation: dotPulse 2s infinite;
+
+    &-1 {
+      top: 30%;
+      left: 40%;
+      animation-delay: 0.2s;
+    }
+
+    &-2 {
+      top: 60%;
+      left: 70%;
+      animation-delay: 0.8s;
+    }
+
+    &-3 {
+      top: 45%;
+      left: 20%;
+      animation-delay: 1.4s;
+    }
+  }
+
+  .data-stream {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-family: monospace;
+
+    .data-text {
+      font-size: 18rpx;
+      color: $citic-blue;
+      display: block;
+      opacity: 0.6;
+    }
+
+    .data-val {
+      font-size: 16rpx;
+      color: $bosera-gold;
+    }
+  }
+
+  .loading-tip {
+    font-size: 26rpx;
+    color: $citic-blue;
+    font-weight: 500;
+    letter-spacing: 2rpx;
+  }
+}
+
+@keyframes radarScan {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dotPulse {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}

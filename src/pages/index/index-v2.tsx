@@ -181,7 +181,7 @@ const IndexV2: React.FC = () => {
 						}}
 					>
 						<Text>
-							数据来源：盈米基金 MCP | {reportData.fund_info.nav_date}
+							数据来源：盈米基金 MCP | {reportData?.fund_info?.nav_date || "数据日期待更新"}
 						</Text>
 					</View>
 				</View>

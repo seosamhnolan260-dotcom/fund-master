@@ -140,35 +140,35 @@ const IndexV2: React.FC = () => {
 				<View className="fade-in">
 					{/* 1. 基础信息：中信蓝风格 */}
 					<View className="info-card">
-						<Text className="name">{reportData?.fund_info?.name || "未知基金"}</Text>
-						<Text className="code">{reportData?.fund_info?.code || ""}</Text>
+						<Text className="name">{reportData?.fund_name || "未知基金"}</Text>
+						<Text className="code">{reportData?.fund_code || ""}</Text>
 						<View className="stats-grid">
 							<View className="stat-item">
 								<Text className="label">单位净值</Text>
-								<Text className="value">{reportData?.fund_info?.nav || "-"}</Text>
+								<Text className="value">{reportData?.net_value || "-"}</Text>
 							</View>
 							<View className="stat-item">
 								<Text className="label">日涨跌幅</Text>
 								<Text
-									className={`value ${parseFloat(reportData?.fund_info?.daily_growth || 0) >= 0 ? "up" : "down"}`}
+									className={`value ${parseFloat(reportData?.daily_growth_rate || reportData?.daily_growth || 0) >= 0 ? "up" : "down"}`}
 								>
-									{reportData?.fund_info?.daily_growth || "-"}
+									{reportData?.daily_growth || "-"}
 								</Text>
 							</View>
 							<View className="stat-item">
 								<Text className="label">规模</Text>
-								<Text className="value">{reportData?.fund_info?.scale || "-"}</Text>
+								<Text className="value">{reportData?.fund_scale || "-"}</Text>
 							</View>
 						</View>
 					</View>
 
 					{/* 2. 持仓分布：CSS 柱状图 */}
-					<PortfolioBar stocks={reportData?.portfolios?.stocks || []} />
+					<PortfolioBar stocks={reportData?.asset_allocation || []} />
 
 					{/* 3. AI 分析报告：PDF 质感 */}
 					<AnalysisReport
 						content={reportData?.ai_analysis || "暂无 AI 分析"}
-						fundName={reportData?.fund_info?.name || "基金"}
+						fundName={reportData?.fund_name || "基金"}
 					/>
 
 					{/* 4. 数据来源标注 */}
@@ -181,7 +181,7 @@ const IndexV2: React.FC = () => {
 						}}
 					>
 						<Text>
-							数据来源：盈米基金 MCP | {reportData?.fund_info?.nav_date || "数据日期待更新"}
+							数据来源：盈米基金 MCP | {reportData?.nav_date || reportData?.data_date || "数据日期待更新"}
 						</Text>
 					</View>
 				</View>

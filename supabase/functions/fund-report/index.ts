@@ -9,7 +9,7 @@ const corsHeaders = {
 const YINGMI_MCP_ENDPOINT = Deno.env.get("YINGMI_MCP_ENDPOINT") || "";
 const YINGMI_MCP_API_KEY = Deno.env.get("YINGMI_MCP_API_KEY") || "";
 
-// 阿里云百炼配置（用于生成 AI 分析）
+// 阿里云百炼配置
 const BAILIAN_API_KEY = Deno.env.get("BAILIAN_API_KEY") || "";
 const BAILIAN_MODEL = "qwen-plus";
 
@@ -20,9 +20,12 @@ interface FundReport {
   fund_type: string;
   risk_level: string;
   company: string;
-  manager: string;
+  custodian: string;
   established_date: string;
   scale: string;
+  shares: string;
+  benchmark: string;
+  investment_range: string;
   
   // 业绩数据
   nav: number;
@@ -34,6 +37,7 @@ interface FundReport {
     "6month": string;
     "1year": string;
     "3year": string;
+    "5year": string;
     "since_setup": string;
   };
   
@@ -42,18 +46,34 @@ interface FundReport {
     sharpe_ratio: string;
     max_drawdown: string;
     volatility: string;
+    beta: string;
+    alpha: string;
+    sortino: string;
+    calmar: string;
   };
   
   // 资产配置
   asset_allocation: Array<{
     name: string;
     ratio: string;
+    change: string;
+  }>;
+  
+  // 历史资产配置
+  asset_allocation_history: Array<{
+    period: string;
+    stock: string;
+    bond: string;
+    cash: string;
+    other: string;
   }>;
   
   // 行业配置
   industry_allocation: Array<{
     name: string;
     ratio: string;
+    overweight: string;
+    rank: number;
   }>;
   
   // 重仓股
@@ -62,23 +82,44 @@ interface FundReport {
     name: string;
     ratio: string;
     industry: string;
+    change: string;
   }>;
   
   // 基金经理
-  manager_info: {
+  manager: {
     name: string;
     tenure: string;
     experience: string;
-    bio: string;
+    education: string;
+    style: string;
+    funds_count: string;
+    representative_fund: string;
+    history_performance: Array<{
+      fund_name: string;
+      period: string;
+      annual_return: string;
+      rank: string;
+      max_drawdown: string;
+    }>;
   };
   
   // 费率
   fees: {
     management_fee: string;
     custody_fee: string;
+    service_fee: string;
     subscription_fee: string;
     redemption_fee: string;
   };
+  
+  // 年度收益
+  yearly_returns: Array<{
+    year: string;
+    fund_return: string;
+    benchmark_return: string;
+    excess_return: string;
+    rank: string;
+  }>;
   
   // AI 分析
   ai_analysis: {
@@ -87,10 +128,19 @@ interface FundReport {
     risks: string[];
     recommendation: string;
     rating: number;
+    short_term: string;
+    mid_term: string;
+    long_term: string;
+    allocation_ratio: string;
+    build_position: string;
+    take_profit: string;
+    stop_loss: string;
   };
 }
 
 async function fetchFundData(code: string): Promise<Partial<FundReport>> {
+  console.log("Fetching fund data for:", code);
+  
   // 调用盈米 MCP 获取基金详细数据
   const response = await fetch(`${YINGMI_MCP_ENDPOINT}/fund/detail`, {
     method: "POST",
@@ -102,6 +152,7 @@ async function fetchFundData(code: string): Promise<Partial<FundReport>> {
   });
   
   if (!response.ok) {
+    console.error("Yingmi MCP error:", response.status);
     throw new Error("获取基金数据失败");
   }
   
@@ -110,7 +161,6 @@ async function fetchFundData(code: string): Promise<Partial<FundReport>> {
 }
 
 async function generateAIAnalysis(fundData: Partial<FundReport>): Promise<FundReport["ai_analysis"]> {
-  // 调用阿里云百炼生成 AI 分析
   const prompt = `请分析以下基金并生成专业的投资建议：
 
 基金名称：${fundData.fund_name}
@@ -119,7 +169,7 @@ async function generateAIAnalysis(fundData: Partial<FundReport>): Promise<FundRe
 单位净值：${fundData.nav} (${fundData.nav_date})
 日涨跌幅：${fundData.daily_growth}
 基金规模：${fundData.scale}
-基金经理：${fundData.manager}
+基金经理：${fundData.manager?.name || "未知"}
 
 业绩表现：
 - 近 1 月：${fundData.returns?.["1month"]}
@@ -134,14 +184,23 @@ async function generateAIAnalysis(fundData: Partial<FundReport>): Promise<FundRe
 - 最大回撤：${fundData.risk_metrics?.max_drawdown}
 - 波动率：${fundData.risk_metrics?.volatility}
 
-前十大持仓：${JSON.stringify(fundData.top_stocks)}
+前十大重仓股：${JSON.stringify(fundData.top_stocks?.slice(0, 5))}
 
-请以 JSON 格式返回分析结果，包含：
-1. summary: 一句话总结（50 字以内）
-2. strengths: 核心优势（3-5 条）
-3. risks: 潜在风险（3-5 条）
-4. recommendation: 投资建议（100 字以内）
-5. rating: 综合评级（1-5 分）`;
+请以 JSON 格式返回分析结果，包含以下字段：
+{
+  "summary": "一句话总结（50 字以内）",
+  "strengths": ["优势 1", "优势 2", "优势 3", "优势 4"],
+  "risks": ["风险 1", "风险 2", "风险 3"],
+  "recommendation": "投资建议（100 字以内）",
+  "rating": 综合评级（1-5 分）,
+  "short_term": "短期建议（推荐/中性/谨慎）",
+  "mid_term": "中期建议（推荐/中性/谨慎）",
+  "long_term": "长期建议（推荐/中性/谨慎）",
+  "allocation_ratio": "建议配置比例（如 10%-20%）",
+  "build_position": "建仓方式（一次性/定投/分批）",
+  "take_profit": "止盈建议",
+  "stop_loss": "止损建议"
+}`;
 
   try {
     const response = await fetch("https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation", {
@@ -167,19 +226,12 @@ async function generateAIAnalysis(fundData: Partial<FundReport>): Promise<FundRe
     
     if (!response.ok) {
       console.error("AI analysis failed:", response.status);
-      return {
-        summary: "暂无 AI 分析",
-        strengths: [],
-        risks: [],
-        recommendation: "请参考基金定期报告",
-        rating: 3,
-      };
+      return getDefaultAIAnalysis();
     }
     
     const result = await response.json();
     const content = result.output?.choices?.[0]?.message?.content || "{}";
     
-    // 尝试解析 JSON
     try {
       const analysis = JSON.parse(content);
       return {
@@ -188,35 +240,51 @@ async function generateAIAnalysis(fundData: Partial<FundReport>): Promise<FundRe
         risks: analysis.risks || [],
         recommendation: analysis.recommendation || "请参考基金定期报告",
         rating: analysis.rating || 3,
+        short_term: analysis.short_term || "中性",
+        mid_term: analysis.mid_term || "中性",
+        long_term: analysis.long_term || "推荐",
+        allocation_ratio: analysis.allocation_ratio || "10%-20%",
+        build_position: analysis.build_position || "定投",
+        take_profit: analysis.take_profit || "收益率达到 20% 时可考虑部分止盈",
+        stop_loss: analysis.stop_loss || "回撤超过 15% 时考虑调整",
       };
     } catch {
-      return {
-        summary: content.substring(0, 100),
-        strengths: [],
-        risks: [],
-        recommendation: content,
-        rating: 3,
-      };
+      console.error("Failed to parse AI response:", content);
+      return getDefaultAIAnalysis();
     }
   } catch (error) {
     console.error("AI analysis error:", error);
-    return {
-      summary: "暂无 AI 分析",
-      strengths: [],
-      risks: [],
-      recommendation: "请参考基金定期报告",
-      rating: 3,
-    };
+    return getDefaultAIAnalysis();
   }
 }
 
+function getDefaultAIAnalysis(): FundReport["ai_analysis"] {
+  return {
+    summary: "暂无 AI 分析",
+    strengths: ["数据不足，无法生成分析"],
+    risks: ["请参考基金定期报告"],
+    recommendation: "建议仔细阅读基金合同、招募说明书等法律文件",
+    rating: 3,
+    short_term: "中性",
+    mid_term: "中性",
+    long_term: "推荐",
+    allocation_ratio: "10%-20%",
+    build_position: "定投",
+    take_profit: "收益率达到 20% 时可考虑部分止盈",
+    stop_loss: "回撤超过 15% 时考虑调整",
+  };
+}
+
 function generateMarkdownReport(report: FundReport): string {
+  const today = new Date().toLocaleDateString("zh-CN");
+  const nextUpdate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("zh-CN");
+
   return `# 基金深度研究报告
 
-**基金名称**: ${report.fund_name}  
-**基金代码**: ${report.fund_code}  
-**报告日期**: ${new Date().toLocaleDateString("zh-CN")}  
-**数据来源**: 盈米基金 MCP
+**报告日期：** ${today}
+**研究员：** AI 基金分析师
+**基金代码：** ${report.fund_code}
+**基金名称：** ${report.fund_name}
 
 ---
 
@@ -224,131 +292,317 @@ function generateMarkdownReport(report: FundReport): string {
 
 | 项目 | 内容 |
 |------|------|
-| 基金名称 | ${report.fund_name} |
 | 基金代码 | ${report.fund_code} |
+| 基金名称 | ${report.fund_name} |
 | 基金类型 | ${report.fund_type} |
-| 风险等级 | ${report.risk_level} |
-| 基金公司 | ${report.company} |
-| 基金经理 | ${report.manager} |
 | 成立日期 | ${report.established_date} |
-| 基金规模 | ${report.scale} |
+| 基金规模 | ${report.scale}（截至${report.nav_date}） |
+| 基金份额 | ${report.shares || "-"} |
+| 基金管理人 | ${report.company} |
+| 基金托管人 | ${report.custodian || "-"} |
+| 业绩比较基准 | ${report.benchmark || "-"} |
+| 风险等级 | ${report.risk_level} |
+| 投资范围 | ${report.investment_range || "-"} |
 
 ---
 
-## 二、业绩表现
+## 二、基金经理信息
 
-| 时间段 | 收益率 |
-|--------|--------|
-| 近 1 个月 | ${report.returns["1month"]} |
-| 近 3 个月 | ${report.returns["3month"]} |
-| 近 6 个月 | ${report.returns["6month"]} |
-| 近 1 年 | ${report.returns["1year"]} |
-| 近 3 年 | ${report.returns["3year"]} |
-| 成立以来 | ${report.returns["since_setup"]} |
+### 2.1 现任基金经理
 
-**当前净值**: ${report.nav} (${report.nav_date})  
-**日涨跌幅**: ${report.daily_growth}
+| 姓名 | 任职日期 | 从业年限 | 管理基金数 | 代表作品 |
+|------|----------|----------|------------|----------|
+| ${report.manager?.name || "-"} | ${report.manager?.tenure || "-"} | ${report.manager?.experience || "-"} | ${report.manager?.funds_count || "-"} | ${report.manager?.representative_fund || "-"} |
 
----
+### 2.2 基金经理简历
 
-## 三、风险指标
+**教育背景：**
+- ${report.manager?.education || "数据暂缺"}
 
-| 指标 | 数值 |
-|------|------|
-| 夏普比率 | ${report.risk_metrics.sharpe_ratio} |
-| 最大回撤 | ${report.risk_metrics.max_drawdown} |
-| 波动率 | ${report.risk_metrics.volatility} |
+**从业经历：**
+- 数据暂缺
 
----
+**投资风格：**
+${report.manager?.style || "数据暂缺"}
 
-## 四、资产配置
+### 2.3 基金经理历史业绩
 
-| 资产类别 | 配置比例 |
-|----------|----------|
-${report.asset_allocation.map(item => `| ${item.name} | ${item.ratio} |`).join("\n")}
+| 基金名称 | 任职期间 | 年化收益 | 同类排名 | 最大回撤 |
+|----------|----------|----------|----------|----------|
+${report.manager?.history_performance?.map(p => `| ${p.fund_name} | ${p.period} | ${p.annual_return} | ${p.rank} | ${p.max_drawdown} |`).join("\n") || "| 数据暂缺 | - | - | - | - |"}
 
 ---
 
-## 五、行业配置
+## 三、投资目标与策略
 
-| 行业 | 配置比例 |
-|------|----------|
-${report.industry_allocation.map(item => `| ${item.name} | ${item.ratio} |`).join("\n")}
+### 3.1 投资目标
 
----
+数据暂缺。请参考基金合同。
 
-## 六、前十大重仓股
+### 3.2 投资范围
 
-| 序号 | 代码 | 名称 | 持仓比例 | 行业 |
-|------|------|------|----------|------|
-${report.top_stocks.map((stock, i) => `| ${i+1} | ${stock.code} | ${stock.name} | ${stock.ratio} | ${stock.industry} |`).join("\n")}
+- **股票投资比例：** 数据暂缺
+- **债券投资比例：** 数据暂缺
+- **现金及货币市场工具：** 数据暂缺
+- **其他金融工具：** 数据暂缺
 
----
+### 3.3 投资策略
 
-## 七、基金经理
+**核心策略：** 数据暂缺
 
-**姓名**: ${report.manager_info.name}  
-**任职年限**: ${report.manager_info.tenure}  
-**从业经验**: ${report.manager_info.experience}
+**选股方法：** 数据暂缺
 
-**简介**: ${report.manager_info.bio}
+**行业配置：** 数据暂缺
 
----
-
-## 八、费率结构
-
-| 费用类型 | 费率 |
-|----------|------|
-| 管理费 | ${report.fees.management_fee} |
-| 托管费 | ${report.fees.custody_fee} |
-| 申购费 | ${report.fees.subscription_fee} |
-| 赎回费 | ${report.fees.redemption_fee} |
+**仓位管理：** 数据暂缺
 
 ---
 
-## 九、AI 深度分析
+## 四、资产配置分析
 
-### 核心观点
-> ${report.ai_analysis.summary}
+### 4.1 当前资产配置（截至${report.nav_date}）
 
-### 核心优势
-${report.ai_analysis.strengths.map(s => `- ${s}`).join("\n")}
+| 资产类别 | 持仓比例 | 较上期变化 |
+|----------|----------|------------|
+${report.asset_allocation?.map(item => `| ${item.name} | ${item.ratio} | ${item.change || "-"} |`).join("\n") || "| 股票 | 数据暂缺 | - |\n| 债券 | 数据暂缺 | - |\n| 银行存款 | 数据暂缺 | - |\n| 其他资产 | 数据暂缺 | - |"}
 
-### 潜在风险
-${report.ai_analysis.risks.map(r => `- ${r}`).join("\n")}
+### 4.2 历史资产配置变化
 
-### 投资建议
-${report.ai_analysis.recommendation}
+| 报告期 | 股票 | 债券 | 现金 | 其他 |
+|--------|------|------|------|------|
+${report.asset_allocation_history?.map(item => `| ${item.period} | ${item.stock} | ${item.bond} | ${item.cash} | ${item.other} |`).join("\n") || "| 2024Q4 | 数据暂缺 | 数据暂缺 | 数据暂缺 | 数据暂缺 |\n| 2024Q3 | 数据暂缺 | 数据暂缺 | 数据暂缺 | 数据暂缺 |\n| 2024Q2 | 数据暂缺 | 数据暂缺 | 数据暂缺 | 数据暂缺 |\n| 2024Q1 | 数据暂缺 | 数据暂缺 | 数据暂缺 | 数据暂缺 |"}
 
-### 综合评级
-${"⭐".repeat(report.ai_analysis.rating)}${"☆".repeat(5 - report.ai_analysis.rating)} (${report.ai_analysis.rating}/5)
+### 4.3 仓位分析
+
+- **当前股票仓位：** 数据暂缺
+- **近一年平均仓位：** 数据暂缺
+- **仓位波动范围：** 数据暂缺
+- **仓位特点：** 数据暂缺
+
+---
+
+## 五、行业配置分析
+
+### 5.1 当前行业配置（截至${report.nav_date}）
+
+| 行业 | 持仓比例 | 超配/低配 | 行业排名 |
+|------|----------|-----------|----------|
+${report.industry_allocation?.map(item => `| ${item.name} | ${item.ratio} | ${item.overweight || "-"} | ${item.rank || "-"} |`).join("\n") || "| 数据暂缺 | 数据暂缺 | - | - |"}
+
+### 5.2 行业配置变化趋势
+
+数据暂缺。
+
+### 5.3 行业配置特点
+
+数据暂缺。
+
+---
+
+## 六、重仓股分析
+
+### 6.1 前十大重仓股（截至${report.nav_date}）
+
+| 序号 | 股票代码 | 股票名称 | 持仓比例 | 所属行业 | 较上期变化 |
+|------|----------|----------|----------|----------|------------|
+${report.top_stocks?.map((stock, i) => `| ${i+1} | ${stock.code} | ${stock.name} | ${stock.ratio} | ${stock.industry} | ${stock.change || "-"} |`).join("\n") || "| 1 | 数据暂缺 | 数据暂缺 | 数据暂缺 | 数据暂缺 | 数据暂缺 |"}
+
+### 6.2 重仓股特点分析
+
+**集中度分析：**
+- 前十大重仓股合计占比：数据暂缺
+- 第一大重仓股占比：数据暂缺
+- 集中度评价：数据暂缺
+
+**风格分析：**
+- 市值风格：数据暂缺
+- 估值风格：数据暂缺
+- 行业分布：数据暂缺
+
+### 6.3 重点个股分析
+
+数据暂缺。
+
+---
+
+## 七、业绩表现分析
+
+### 7.1 收益率表现
+
+| 时间段 | 基金收益率 | 业绩基准收益 | 超额收益 | 同类平均 | 同类排名 |
+|--------|------------|--------------|----------|----------|----------|
+| 近 1 月 | ${report.returns?.["1month"] || "-"} | - | - | - | - |
+| 近 3 月 | ${report.returns?.["3month"] || "-"} | - | - | - | - |
+| 近 6 月 | ${report.returns?.["6month"] || "-"} | - | - | - | - |
+| 近 1 年 | ${report.returns?.["1year"] || "-"} | - | - | - | - |
+| 近 3 年 | ${report.returns?.["3year"] || "-"} | - | - | - | - |
+| 近 5 年 | ${report.returns?.["5year"] || "-"} | - | - | - | - |
+| 成立以来 | ${report.returns?.["since_setup"] || "-"} | - | - | - | - |
+
+### 7.2 年度收益表现
+
+| 年度 | 基金收益率 | 业绩基准收益 | 超额收益 | 同类排名 |
+|------|------------|--------------|----------|----------|
+${report.yearly_returns?.map(item => `| ${item.year} | ${item.fund_return} | ${item.benchmark_return} | ${item.excess_return} | ${item.rank} |`).join("\n") || "| 2024 | 数据暂缺 | 数据暂缺 | 数据暂缺 | 数据暂缺 |\n| 2023 | 数据暂缺 | 数据暂缺 | 数据暂缺 | 数据暂缺 |\n| 2022 | 数据暂缺 | 数据暂缺 | 数据暂缺 | 数据暂缺 |"}
+
+### 7.3 业绩稳定性分析
+
+- **胜率（月度）：** 数据暂缺
+- **胜率（年度）：** 数据暂缺
+- **业绩波动性：** 数据暂缺
+- **业绩持续性评价：** 数据暂缺
+
+---
+
+## 八、风险分析
+
+### 8.1 风险指标
+
+| 指标 | 数值 | 同类平均 | 评价 |
+|------|------|----------|------|
+| 夏普比率（近 3 年） | ${report.risk_metrics?.sharpe_ratio || "-"} | - | - |
+| 卡玛比率（近 3 年） | ${report.risk_metrics?.calmar || "-"} | - | - |
+| 索提诺比率（近 3 年） | ${report.risk_metrics?.sortino || "-"} | - | - |
+| 波动率（近 3 年） | ${report.risk_metrics?.volatility || "-"} | - | - |
+| Beta 系数（近 3 年） | ${report.risk_metrics?.beta || "-"} | 1.00 | - |
+| Alpha（近 3 年） | ${report.risk_metrics?.alpha || "-"} | 0% | - |
+| 信息比率（近 3 年） | - | - | - |
+
+### 8.2 回撤分析
+
+| 指标 | 数值 | 同类平均 | 评价 |
+|------|------|----------|------|
+| 最大回撤（近 1 年） | ${report.risk_metrics?.max_drawdown || "-"} | - | - |
+| 最大回撤（近 3 年） | - | - | - |
+| 最大回撤（成立以来） | - | - | - |
+| 最大回撤发生日期 | - | - | - |
+| 最大回撤恢复天数 | - | - | - |
+
+### 8.3 下行风险分析
+
+- **下行标准差：** 数据暂缺
+- **VaR（95%，1 日）：** 数据暂缺
+- **CVaR（95%）：** 数据暂缺
+
+### 8.4 风险综合评价
+
+数据暂缺。
+
+---
+
+## 九、费率结构
+
+### 9.1 基金费率
+
+| 费用类型 | 费率 | 说明 |
+|----------|------|------|
+| 管理费 | ${report.fees?.management_fee || "-"} | 按日计提 |
+| 托管费 | ${report.fees?.custody_fee || "-"} | 按日计提 |
+| 销售服务费 | ${report.fees?.service_fee || "-"} | C 类份额收取 |
+| 申购费 | ${report.fees?.subscription_fee || "-"} | 前端收费，可打折 |
+| 赎回费 | ${report.fees?.redemption_fee || "-"} | 持有期<7 天：1.5% |
+
+### 9.2 费率对比
+
+| 基金 | 管理费 | 托管费 | 销售服务费 | 综合费率 |
+|------|--------|--------|------------|----------|
+| 本基金 | ${report.fees?.management_fee || "-"} | ${report.fees?.custody_fee || "-"} | ${report.fees?.service_fee || "-"} | - |
+| 同类平均 | - | - | - | - |
+
+### 9.3 费率评价
+
+数据暂缺。
 
 ---
 
 ## 十、适合人群
 
-- ✅ 看好${report.fund_type}的长期投资者
-- ✅ 风险承受能力${report.risk_level}的投资者
-- ✅ 希望配置${report.company}旗下基金的投资者
-- ❌ 不适合短期投机者
-- ❌ 不适合风险承受能力低的投资者
+### 10.1 投资者画像
+
+**风险承受能力：** ${report.risk_level || "R3"}
+**投资期限：** 中长期
+**投资目标：** 资本增值
+
+### 10.2 适合场景
+
+- ✅ 看好${report.fund_type}长期发展的投资者
+- ✅ 希望配置${report.fund_type}的投资者
+- ✅ 寻求长期资本增值的投资者
+- ✅ 作为投资组合中的权益资产配置
+
+### 10.3 不适合人群
+
+- ❌ 风险承受能力低于${report.risk_level || "R3"}的投资者
+- ❌ 投资期限短于 6 个月的投资者
+- ❌ 不认可${report.fund_type}投资理念的投资者
 
 ---
 
-## 重要声明
+## 十一、投资建议
 
-1. 本报告基于公开数据编制，仅供参考，不构成投资建议
-2. 基金有风险，投资需谨慎
-3. 过往业绩不代表未来表现
-4. 投资者应仔细阅读基金合同、招募说明书等法律文件
-5. 数据来源：盈米基金 MCP
-6. 报告生成时间：${new Date().toISOString()}
+### 11.1 核心优势
+
+${report.ai_analysis?.strengths?.map((s, i) => `${i+1}. **${s.split("：")[0] || `优势${i+1}`}**：${s}`).join("\n") || "1. **数据不足**：请参考基金定期报告"}
+
+### 11.2 潜在风险
+
+${report.ai_analysis?.risks?.map((r, i) => `${i+1}. **${r.split("：")[0] || `风险${i+1}`}**：${r}`).join("\n") || "1. **市场风险**：股市波动可能导致基金净值下跌"}
+
+### 11.3 投资建议
+
+| 投资维度 | 建议 | 理由 |
+|----------|------|------|
+| 短期（1-3 月） | ${report.ai_analysis?.short_term || "中性"} | 根据市场情况灵活调整 |
+| 中期（3-12 月） | ${report.ai_analysis?.mid_term || "中性"} | 关注基金业绩持续性 |
+| 长期（1 年以上） | ${report.ai_analysis?.long_term || "推荐"} | 长期持有分享经济增长红利 |
+
+### 11.4 配置建议
+
+- **建议配置比例：** ${report.ai_analysis?.allocation_ratio || "10%-20%"}（占权益资产）
+- **建仓方式：** ${report.ai_analysis?.build_position || "定投"}
+- **止盈建议：** ${report.ai_analysis?.take_profit || "收益率达到 20% 时可考虑部分止盈"}
+- **止损建议：** ${report.ai_analysis?.stop_loss || "回撤超过 15% 时考虑调整"}
+
+### 11.5 总体评级
+
+| 评级维度 | 评级 |
+|----------|------|
+| 基金经理 | ${"⭐".repeat(report.ai_analysis?.rating || 3)}${"☆".repeat(5 - (report.ai_analysis?.rating || 3))} |
+| 投资业绩 | ${"⭐".repeat(report.ai_analysis?.rating || 3)}${"☆".repeat(5 - (report.ai_analysis?.rating || 3))} |
+| 风险控制 | ${"⭐".repeat(report.ai_analysis?.rating || 3)}${"☆".repeat(5 - (report.ai_analysis?.rating || 3))} |
+| 费率水平 | ${"⭐".repeat(report.ai_analysis?.rating || 3)}${"☆".repeat(5 - (report.ai_analysis?.rating || 3))} |
+| **综合评级** | **${"⭐".repeat(report.ai_analysis?.rating || 3)}${"☆".repeat(5 - (report.ai_analysis?.rating || 3))}** |
+
+**投资评级：** ${report.ai_analysis?.rating && report.ai_analysis.rating >= 4 ? "推荐" : report.ai_analysis?.rating === 3 ? "中性" : "谨慎"}
 
 ---
 
-**报告生成**: 基金投资大师 AI 研报系统  
-**数据支持**: 盈米基金 MCP  
-**AI 分析**: 阿里云百炼
+## 十二、附录
+
+### 12.1 重要声明
+
+本报告基于公开信息编制，仅供参考，不构成投资建议。投资者据此操作，风险自担。
+
+### 12.2 数据来源
+
+- 基金定期报告
+- 盈米基金 MCP
+- 基金公司官网
+
+### 12.3 相关报告
+
+- 基金合同
+- 招募说明书
+- 基金定期报告
+
+---
+
+**报告完成日期：** ${today}
+**下次更新：** ${nextUpdate}
+
+---
+
+*本报告由 AI 基金分析师自动生成 · 数据来源：盈米基金 MCP*
 `;
 }
 
@@ -396,40 +650,55 @@ serve(async (req: Request) => {
       fund_type: fundData.fund_type || "未知",
       risk_level: fundData.risk_level || "R3",
       company: fundData.company || "未知",
-      manager: fundData.manager || "未知",
+      custodian: fundData.custodian || "未知",
       established_date: fundData.established_date || "未知",
-      scale: fundData.scale || "未知",
-      nav: fundData.nav || 0,
+      scale: fundData.fund_scale || "未知",
+      shares: fundData.fund_shares || "未知",
+      benchmark: fundData.benchmark || "未知",
+      investment_range: fundData.investment_range || "未知",
+      nav: fundData.net_value || 0,
       nav_date: fundData.nav_date || "",
       daily_growth: fundData.daily_growth || "0%",
       returns: {
-        "1month": fundData.returns?.["1month"] || "-",
-        "3month": fundData.returns?.["3month"] || "-",
-        "6month": fundData.returns?.["6month"] || "-",
-        "1year": fundData.returns?.["1year"] || "-",
-        "3year": fundData.returns?.["3year"] || "-",
-        "since_setup": fundData.returns?.["since_setup"] || "-",
+        "1month": fundData.return_1month || "-",
+        "3month": fundData.return_3month || "-",
+        "6month": fundData.return_6month || "-",
+        "1year": fundData.return_1year || "-",
+        "3year": fundData.return_3year || "-",
+        "5year": fundData.return_5year || "-",
+        "since_setup": fundData.return_since_setup || "-",
       },
       risk_metrics: {
-        sharpe_ratio: fundData.risk_metrics?.sharpe_ratio || "-",
-        max_drawdown: fundData.risk_metrics?.max_drawdown || "-",
-        volatility: fundData.risk_metrics?.volatility || "-",
+        sharpe_ratio: fundData.sharpe_ratio || "-",
+        max_drawdown: fundData.max_drawdown || "-",
+        volatility: fundData.volatility || "-",
+        beta: fundData.beta || "-",
+        alpha: fundData.alpha || "-",
+        sortino: fundData.sortino_ratio || "-",
+        calmar: fundData.calmar_ratio || "-",
       },
       asset_allocation: fundData.asset_allocation || [],
+      asset_allocation_history: fundData.asset_allocation_history || [],
       industry_allocation: fundData.industry_allocation || [],
       top_stocks: fundData.top_stocks || [],
-      manager_info: {
-        name: fundData.manager || "未知",
+      manager: {
+        name: fundData.fund_manager || "未知",
         tenure: fundData.manager_tenure || "未知",
         experience: fundData.manager_experience || "未知",
-        bio: fundData.manager_bio || "",
+        education: fundData.manager_education || "未知",
+        style: fundData.manager_style || "未知",
+        funds_count: fundData.manager_funds_count || "未知",
+        representative_fund: fundData.manager_representative_fund || "未知",
+        history_performance: fundData.manager_history_performance || [],
       },
       fees: {
-        management_fee: fundData.fees?.management_fee || "-",
-        custody_fee: fundData.fees?.custody_fee || "-",
-        subscription_fee: fundData.fees?.subscription_fee || "-",
-        redemption_fee: fundData.fees?.redemption_fee || "-",
+        management_fee: fundData.management_fee || "-",
+        custody_fee: fundData.custody_fee || "-",
+        service_fee: fundData.service_fee || "-",
+        subscription_fee: fundData.subscription_fee || "-",
+        redemption_fee: fundData.redemption_fee || "-",
       },
+      yearly_returns: fundData.yearly_returns || [],
       ai_analysis,
     };
 

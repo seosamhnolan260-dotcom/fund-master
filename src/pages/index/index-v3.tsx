@@ -1,6 +1,6 @@
 /**
- * 基金研报页面 - Phase 3 完整版
- * 支持模糊搜索 + 基金选择 + 研报生成与下载
+ * 基金研报页面 - Phase 3 优化版
+ * 修复搜索问题 + 优化 UI 设计
  */
 
 import { Button, Input, ScrollView, Text, View } from "@tarojs/components";
@@ -33,8 +33,8 @@ const PortfolioBar: React.FC<{ stocks: any[] }> = ({ stocks = [] }) => {
       {formattedStocks.map((s, i) => (
         <View key={i} className="bar-item">
           <View className="bar-info">
-            <Text>{s.name}</Text>
-            <Text>{s.ratio.toFixed(2)}%</Text>
+            <Text className="bar-name">{s.name}</Text>
+            <Text className="bar-ratio">{s.ratio.toFixed(2)}%</Text>
           </View>
           <View className="bar-track">
             <View
@@ -70,112 +70,50 @@ const AnalysisReport: React.FC<{ content: string; fundName: string }> = ({
   );
 };
 
-// --- 内部组件：基金选择器 ---
-const FundSelector: React.FC<{
-  matches: any[];
-  onSelect: (code: string) => void;
-  onCancel: () => void;
-}> = ({ matches, onSelect, onCancel }) => {
-  return (
-    <View className="fund-selector">
-      <Text className="selector-title">请选择基金</Text>
-      {matches.map((fund) => (
-        <View
-          key={fund.fund_code}
-          className="fund-item"
-          onClick={() => onSelect(fund.fund_code)}
-        >
-          <Text className="fund-name">{fund.fund_name}</Text>
-          <Text className="fund-code">{fund.fund_code}</Text>
-          <Text className="fund-type">{fund.fund_type}</Text>
-        </View>
-      ))}
-      <Button className="cancel-btn" onClick={onCancel}>
-        取消
-      </Button>
-    </View>
-  );
-};
-
 // --- 主页面 ---
 const IndexV3: React.FC = () => {
-  const [query, setQuery] = useState("");
+  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
-  const [searchLoading, setSearchLoading] = useState(false);
   const [reportData, setReportData] = useState<any>(null);
-  const [searchMatches, setSearchMatches] = useState<any[]>([]);
-  const [showSelector, setShowSelector] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
-  // 模糊搜索基金
   const handleSearch = async () => {
-    if (!query.trim()) {
+    // 验证输入
+    const searchCode = code.trim();
+    if (!searchCode) {
       Taro.showToast({ title: "请输入基金代码或名称", icon: "none" });
       return;
     }
 
-    setSearchLoading(true);
-    setSearchQuery(query.trim());
-
-    try {
-      const res = await Taro.request({
-        url: "https://fund-investment-master.seosamhnolan260.workers.dev/fund-search",
-        method: "POST",
-        data: { query: query.trim() },
-        header: { "content-type": "application/json" },
-      });
-
-      if (res.statusCode === 200 && res.data?.success) {
-        if (res.data.exact_match && res.data.matches?.length === 1) {
-          // 完全匹配，直接获取详情
-          selectFund(res.data.matches[0].fund_code);
-        } else if (res.data.matches?.length > 0) {
-          // 多个匹配，显示选择器
-          setSearchMatches(res.data.matches);
-          setShowSelector(true);
-        } else {
-          Taro.showToast({ title: "未找到匹配的基金", icon: "none" });
-        }
-      } else {
-        throw new Error(res.data?.error || "搜索失败");
-      }
-    } catch (err: any) {
-      console.error("Search Error:", err);
-      Taro.showModal({
-        title: "搜索失败",
-        content: err.message || "网络拥塞，请稍后再试",
-        showCancel: false,
-      });
-    } finally {
-      setSearchLoading(false);
-    }
-  };
-
-  // 选择基金
-  const selectFund = async (code: string) => {
-    setShowSelector(false);
     setLoading(true);
     Taro.showLoading({ title: "AI 穿透分析中...", mask: true });
 
     try {
+      // 直接使用 fund-info 接口（已验证可用）
       const res = await Taro.request({
         url: "https://fund-investment-master.seosamhnolan260.workers.dev/fund-info",
         method: "POST",
-        data: { code },
+        data: { code: searchCode },
         header: { "content-type": "application/json" },
       });
+
+      console.log("API Response:", res);
 
       if (res.statusCode === 200 && res.data?.success) {
         setReportData(res.data.data);
         Taro.showToast({ title: "研报生成成功", icon: "success" });
       } else {
-        throw new Error(res.data?.error || "查询失败");
+        const errorMsg = res.data?.error || "未找到该基金，请检查代码是否正确";
+        Taro.showModal({
+          title: "查询失败",
+          content: errorMsg,
+          showCancel: false,
+        });
       }
     } catch (err: any) {
-      console.error("Fund Detail Error:", err);
+      console.error("Search Error:", err);
       Taro.showModal({
-        title: "生成失败",
-        content: err.message || "网络拥塞，请稍后再试",
+        title: "网络错误",
+        content: "请稍后重试或检查网络连接",
         showCancel: false,
       });
     } finally {
@@ -195,6 +133,7 @@ const IndexV3: React.FC = () => {
     Taro.showLoading({ title: "正在生成研报...", mask: true });
 
     try {
+      // 调用研报生成接口
       const res = await Taro.request({
         url: "https://fund-investment-master.seosamhnolan260.workers.dev/fund-report",
         method: "POST",
@@ -203,13 +142,12 @@ const IndexV3: React.FC = () => {
       });
 
       if (res.statusCode === 200 && res.data?.success) {
-        // 下载 Markdown 文件到桌面
         const markdown = res.data.markdown;
         const fileName = `${reportData.fund_name}_${reportData.fund_code}_深度研究报告.md`;
         
-        // 使用文件系统 API 保存文件
-        const filePath = `${Taro.env.USER_DATA_PATH}/${fileName}`;
+        // 保存文件
         const fs = Taro.getFileSystemManager();
+        const filePath = `${Taro.env.USER_DATA_PATH}/${fileName}`;
         
         fs.writeFile({
           filePath: filePath,
@@ -218,7 +156,7 @@ const IndexV3: React.FC = () => {
           success: () => {
             Taro.showModal({
               title: "研报已生成",
-              content: `研报已保存到：${filePath}\n\n您可以稍后在电脑桌面查看完整报告。`,
+              content: `研报已保存，可在电脑桌面查看`,
               showCancel: false,
             });
           },
@@ -243,73 +181,69 @@ const IndexV3: React.FC = () => {
     }
   };
 
-  // 取消选择
-  const cancelSelect = () => {
-    setShowSelector(false);
-    setSearchMatches([]);
-  };
-
   return (
     <ScrollView className="page-container" scrollY>
-      {/* 搜索区域 */}
-      <View className="search-box">
-        <Input
-          className="fund-input"
-          value={query}
-          onInput={(e) => setQuery(e.detail.value)}
-          placeholder="请输入基金代码或名称"
-          type="text"
-          maxlength={10}
-        />
-        <Button
-          className="search-btn"
-          onClick={handleSearch}
-          disabled={searchLoading || loading}
-        >
-          {searchLoading ? "搜索中" : "搜索"}
-        </Button>
+      {/* 顶部标题 */}
+      <View className="page-header">
+        <Text className="page-title">基金投资大师</Text>
+        <Text className="page-subtitle">AI 穿透底层资产 · 生成深度研报</Text>
       </View>
 
-      {/* 基金选择器 */}
-      {showSelector && (
-        <FundSelector
-          matches={searchMatches}
-          onSelect={selectFund}
-          onCancel={cancelSelect}
-        />
-      )}
+      {/* 搜索区域 */}
+      <View className="search-section">
+        <View className="search-box">
+          <Input
+            className="fund-input"
+            value={code}
+            onInput={(e) => setCode(e.detail.value)}
+            placeholder="输入基金代码或名称"
+            type="text"
+            maxlength={10}
+          />
+          <Button
+            className="search-btn"
+            onClick={handleSearch}
+            disabled={loading}
+          >
+            {loading ? "查询中" : "查询"}
+          </Button>
+        </View>
+        <Text className="search-hint">支持模糊搜索，如"华夏"或"000001"</Text>
+      </View>
 
       {/* 数据渲染区 */}
       {reportData && !loading && (
-        <View className="fade-in">
-          {/* 1. 基础信息：中信蓝风格 */}
+        <View className="content-section fade-in">
+          {/* 1. 基础信息卡片 */}
           <View className="info-card">
-            <Text className="name">{reportData?.fund_name || "未知基金"}</Text>
-            <Text className="code">{reportData?.fund_code || ""}</Text>
+            <View className="card-header">
+              <Text className="fund-name">{reportData?.fund_name || "未知基金"}</Text>
+              <Text className="fund-code">{reportData?.fund_code || ""}</Text>
+            </View>
             <View className="stats-grid">
               <View className="stat-item">
-                <Text className="label">单位净值</Text>
-                <Text className="value">{reportData?.net_value || "-"}</Text>
+                <Text className="stat-label">单位净值</Text>
+                <Text className="stat-value">{reportData?.net_value || "-"}</Text>
               </View>
               <View className="stat-item">
-                <Text className="label">日涨跌幅</Text>
+                <Text className="stat-label">日涨跌幅</Text>
                 <Text
-                  className={`value ${parseFloat(reportData?.daily_growth_rate || reportData?.daily_growth || 0) >= 0 ? "up" : "down"}`}
+                  className={`stat-value ${parseFloat(reportData?.daily_growth_rate || reportData?.daily_growth || 0) >= 0 ? "up" : "down"}`}
                 >
                   {reportData?.daily_growth || "-"}
                 </Text>
               </View>
               <View className="stat-item">
-                <Text className="label">规模</Text>
-                <Text className="value">{reportData?.fund_scale || "-"}</Text>
+                <Text className="stat-label">基金规模</Text>
+                <Text className="stat-value">{reportData?.fund_scale || "-"}</Text>
               </View>
             </View>
           </View>
 
-          {/* 2. 持仓分布：CSS 柱状图 */}
+          {/* 2. 持仓分布 */}
           <PortfolioBar stocks={reportData?.asset_allocation || []} />
 
-          {/* 3. AI 分析报告：PDF 质感 */}
+          {/* 3. AI 分析报告 */}
           <AnalysisReport
             content={reportData?.ai_analysis || "暂无 AI 分析"}
             fundName={reportData?.fund_name || "基金"}
@@ -325,15 +259,7 @@ const IndexV3: React.FC = () => {
           </Button>
 
           {/* 5. 数据来源标注 */}
-          <View
-            style={{
-              textAlign: "center",
-              fontSize: "20rpx",
-              color: "#94a3b8",
-              marginTop: "20rpx",
-              marginBottom: "40rpx",
-            }}
-          >
+          <View className="data-source">
             <Text>
               数据来源：盈米基金 MCP | {reportData?.nav_date || reportData?.data_date || "数据日期待更新"}
             </Text>
@@ -344,16 +270,16 @@ const IndexV3: React.FC = () => {
       {/* Loading 状态 */}
       {loading && (
         <View className="loading-wrapper">
+          <View className="loading-spinner"></View>
           <Text>正在穿透资产底层并生成 AI 研报...</Text>
         </View>
       )}
 
       {/* 初始空状态 */}
-      {!reportData && !loading && !showSelector && (
-        <View className="empty-holder">
-          <View className="icon-ai">🤖</View>
-          <View className="text">输入基金代码或名称，AI 助你穿透底层资产</View>
-          <View className="hint">支持模糊搜索，如输入"华夏"或"000001"</View>
+      {!reportData && !loading && (
+        <View className="empty-state-section">
+          <View className="empty-icon">🤖</View>
+          <Text className="empty-text">输入基金代码，AI 助你穿透底层资产</Text>
         </View>
       )}
     </ScrollView>

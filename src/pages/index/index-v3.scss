@@ -1,0 +1,359 @@
+/**
+ * 基金研报页面样式 - Phase 3 现代简约风格
+ * Apple HIG 设计语言 · 清晰信息层级
+ */
+
+$primary-blue: #007AFF;
+$primary-light: #5AC8FA;
+$success-green: #34C759;
+$danger-red: #FF3B30;
+$bg-gray: #F2F2F7;
+$card-bg: #FFFFFF;
+$text-primary: #1C1C1E;
+$text-secondary: #8E8E93;
+$border-light: #E5E5EA;
+
+.page-container {
+  min-height: 100vh;
+  background-color: $bg-gray;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* 搜索栏 - 大圆角 + 阴影 */
+.search-box {
+  display: flex;
+  margin-bottom: 24px;
+  gap: 12px;
+  
+  .fund-input {
+    flex: 1;
+    height: 56px;
+    background: $card-bg;
+    border: none;
+    border-radius: 16px;
+    padding: 0 20px;
+    font-size: 17px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    outline: none;
+    
+    &:focus {
+      box-shadow: 0 2px 16px rgba(0,122,255,0.15);
+    }
+  }
+  
+  .search-btn {
+    width: 80px;
+    height: 56px;
+    background: linear-gradient(135deg, $primary-blue, $primary-light);
+    color: $card-bg;
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,122,255,0.3);
+    
+    &:active {
+      opacity: 0.9;
+      transform: scale(0.98);
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+/* 基金选择器 */
+.fund-selector {
+  background: $card-bg;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  
+  .selector-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: $text-primary;
+    display: block;
+    margin-bottom: 16px;
+  }
+  
+  .fund-item {
+    padding: 16px;
+    border-radius: 12px;
+    background: $bg-gray;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:active {
+      background: rgba(0,122,255,0.1);
+      transform: scale(0.99);
+    }
+    
+    .fund-name {
+      font-size: 17px;
+      font-weight: 600;
+      color: $text-primary;
+      display: block;
+      margin-bottom: 4px;
+    }
+    
+    .fund-code {
+      font-size: 14px;
+      color: $text-secondary;
+      font-family: 'SF Mono', monospace;
+      display: block;
+      margin-bottom: 4px;
+    }
+    
+    .fund-type {
+      font-size: 13px;
+      color: $primary-blue;
+      display: block;
+    }
+  }
+  
+  .cancel-btn {
+    width: 100%;
+    height: 44px;
+    background: $bg-gray;
+    color: $text-primary;
+    border-radius: 12px;
+    font-size: 17px;
+    margin-top: 8px;
+  }
+}
+
+/* 基金信息卡片 - 白色卡片 + 微妙阴影 */
+.info-card {
+  background: $card-bg;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  
+  .name {
+    font-size: 22px;
+    font-weight: 700;
+    color: $text-primary;
+    display: block;
+    margin-bottom: 4px;
+  }
+  
+  .code {
+    font-size: 13px;
+    color: $text-secondary;
+    display: block;
+    font-family: 'SF Mono', monospace;
+    margin-bottom: 20px;
+  }
+  
+  .stats-grid {
+    display: flex;
+    gap: 16px;
+    padding-top: 20px;
+    border-top: 1px solid $border-light;
+    
+    .stat-item {
+      flex: 1;
+      
+      .label {
+        font-size: 12px;
+        color: $text-secondary;
+        display: block;
+        margin-bottom: 6px;
+      }
+      
+      .value {
+        font-size: 20px;
+        font-weight: 700;
+        color: $text-primary;
+        display: block;
+        
+        &.up {
+          color: $danger-red;
+        }
+        
+        &.down {
+          color: $success-green;
+        }
+      }
+    }
+  }
+}
+
+/* CSS 柱状图容器 */
+.portfolio-section {
+  background: $card-bg;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  
+  .section-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: $text-primary;
+    display: block;
+    margin-bottom: 20px;
+  }
+  
+  .bar-item {
+    margin-bottom: 16px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    .bar-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: $text-secondary;
+      margin-bottom: 8px;
+    }
+    
+    .bar-track {
+      height: 8px;
+      background: $border-light;
+      border-radius: 4px;
+      overflow: hidden;
+      
+      .bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, $primary-blue, $primary-light);
+        border-radius: 4px;
+        transition: width 0.6s ease;
+      }
+    }
+  }
+  
+  .empty-state {
+    padding: 40px 0;
+    text-align: center;
+    color: $text-secondary;
+    font-style: italic;
+  }
+}
+
+/* PDF 研报样式 */
+.pdf-report {
+  background: $card-bg;
+  border-top: 4px solid #FF9500;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  
+  .report-header {
+    margin-bottom: 16px;
+    
+    .tag {
+      color: #FF9500;
+      font-size: 11px;
+      font-weight: 700;
+      border: 1px solid #FF9500;
+      padding: 4px 12px;
+      display: inline-block;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+  
+  .report-content {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #3A3A3C;
+    text-align: justify;
+    white-space: pre-wrap;
+  }
+  
+  .report-footer {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid $border-light;
+    font-size: 11px;
+    color: $text-secondary;
+    text-align: right;
+  }
+}
+
+/* 下载按钮 */
+.download-btn {
+  width: 100%;
+  height: 56px;
+  background: linear-gradient(135deg, #34C759, #30D158);
+  color: $card-bg;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(52,199,89,0.3);
+  margin-bottom: 20px;
+  
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+/* 加载状态 */
+.loading-wrapper {
+  padding: 60px 0;
+  text-align: center;
+  color: $primary-blue;
+  font-size: 15px;
+}
+
+/* 淡入动画 */
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 空状态 */
+.empty-holder {
+  padding: 80px 20px;
+  text-align: center;
+  color: $text-secondary;
+  
+  .icon-ai {
+    font-size: 64px;
+    margin-bottom: 16px;
+  }
+  
+  .text {
+    font-size: 17px;
+    margin-bottom: 8px;
+  }
+  
+  .hint {
+    font-size: 14px;
+    color: $text-secondary;
+    margin-top: 16px;
+  }
+}

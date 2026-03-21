@@ -7,7 +7,7 @@ import { Button, Input, ScrollView, Text, View } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import type React from "react";
 import { useState } from "react";
-import "./index.scss";
+import "./index-v3.scss";
 
 // --- 内部组件：持仓分布条 ---
 const PortfolioBar: React.FC<{ stocks: any[] }> = ({ stocks = [] }) => {

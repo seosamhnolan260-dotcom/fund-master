@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基金投资大师 - UI 设计稿预览</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .preview-container {
+            max-width: 375px;
+            margin: 0 auto;
+            background: #F2F2F7;
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.3);
+        }
+        
+        .status-bar {
+            height: 44px;
+            background: #F2F2F7;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .page-content {
+            padding: 20px;
+        }
+        
+        /* 搜索区域 */
+        .search-section {
+            margin-bottom: 24px;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .fund-input {
+            flex: 1;
+            height: 56px;
+            background: #FFFFFF;
+            border: none;
+            border-radius: 16px;
+            padding: 0 20px;
+            font-size: 17px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            outline: none;
+        }
+        
+        .search-btn {
+            width: 80px;
+            height: 56px;
+            background: linear-gradient(135deg, #007AFF, #5AC8FA);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 17px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0,122,255,0.3);
+        }
+        
+        /* 基金信息卡片 */
+        .info-card {
+            background: #FFFFFF;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        }
+        
+        .fund-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1C1C1E;
+            margin-bottom: 4px;
+        }
+        
+        .fund-code {
+            font-size: 13px;
+            color: #8E8E93;
+            font-family: 'SF Mono', monospace;
+            margin-bottom: 20px;
+        }
+        
+        .stats-grid {
+            display: flex;
+            gap: 16px;
+            padding-top: 20px;
+            border-top: 1px solid #E5E5EA;
+        }
+        
+        .stat-item {
+            flex: 1;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #8E8E93;
+            margin-bottom: 6px;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1C1C1E;
+        }
+        
+        .stat-value.up {
+            color: #FF3B30;
+        }
+        
+        .stat-value.down {
+            color: #34C759;
+        }
+        
+        /* 持仓分布 */
+        .portfolio-section {
+            background: #FFFFFF;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        }
+        
+        .section-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1C1C1E;
+            margin-bottom: 20px;
+        }
+        
+        .bar-item {
+            margin-bottom: 16px;
+        }
+        
+        .bar-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .bar-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #6C6C70;
+            margin-bottom: 8px;
+        }
+        
+        .bar-track {
+            height: 8px;
+            background: #E5E5EA;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007AFF, #5AC8FA);
+            border-radius: 4px;
+        }
+        
+        /* AI 研报 */
+        .ai-report {
+            background: #FFFFFF;
+            border-top: 4px solid #FF9500;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        }
+        
+        .report-header {
+            margin-bottom: 16px;
+        }
+        
+        .report-tag {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #FF9500;
+            border: 1px solid #FF9500;
+            padding: 4px 12px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .report-content {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #3A3A3C;
+            text-align: justify;
+        }
+        
+        .report-footer {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #E5E5EA;
+            font-size: 11px;
+            color: #8E8E93;
+            text-align: right;
+        }
+        
+        /* 数据来源 */
+        .data-source {
+            text-align: center;
+            font-size: 11px;
+            color: #8E8E93;
+            padding: 16px;
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        
+        .empty-text {
+            font-size: 17px;
+            color: #8E8E93;
+        }
+        
+        /* 设计稿标签 */
+        .design-label {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .design-label strong {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="design-label">
+        <strong>🎨 方案一：现代简约风格</strong>
+        Apple HIG 设计语言 · 清晰信息层级
+    </div>
+    
+    <div class="preview-container">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>📶 🔋</span>
+        </div>
+        
+        <!-- 页面内容 -->
+        <div class="page-content">
+            <!-- 搜索区域 -->
+            <div class="search-section">
+                <div class="search-box">
+                    <input type="text" class="fund-input" value="000011" placeholder="请输入 6 位基金代码" />
+                    <button class="search-btn">查询</button>
+                </div>
+            </div>
+            
+            <!-- 基金信息卡片 -->
+            <div class="info-card">
+                <div class="fund-name">华夏大盘精选混合</div>
+                <div class="fund-code">000011</div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">单位净值</div>
+                        <div class="stat-value">20.03</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">日涨跌</div>
+                        <div class="stat-value up">-1.98%</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">基金规模</div>
+                        <div class="stat-value">40 亿</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 持仓分布 -->
+            <div class="portfolio-section">
+                <div class="section-title">📊 持仓分布</div>
+                <div class="bar-item">
+                    <div class="bar-info">
+                        <span>股票</span>
+                        <span>85.84%</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: 85.84%"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-info">
+                        <span>债券</span>
+                        <span>1.75%</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: 17.5%; background: linear-gradient(90deg, #5AC8FA, #64D2FF);"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-info">
+                        <span>现金</span>
+                        <span>13.94%</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: 13.94%; background: linear-gradient(90deg, #34C759, #30D158);"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI 研报 -->
+            <div class="ai-report">
+                <div class="report-header">
+                    <span class="report-tag">🤖 DEEP ALPHA AI 分析报告</span>
+                </div>
+                <div class="report-content">
+                    该基金在制造业配置较高（59.23%），重点关注信息传输、软件和信息技术服务业（17.48%）。基金经理屠环宇从业 6 年，目前管理 13 只基金，资产规模 128.10 亿元。近一年回报 29.30%，成立以来回报高达 4124.90%。
+                </div>
+                <div class="report-footer">
+                    数据来源：盈米基金 MCP | 2026 年 03 月 19 日
+                </div>
+            </div>
+            
+            <!-- 数据来源 -->
+            <div class="data-source">
+                数据来源：盈米基金 MCP | 数据日期：2026 年 03 月 19 日
+            </div>
+        </div>
+    </div>
+    
+    <div class="design-label" style="margin-top: 20px;">
+        <strong>📱 适配 iPhone 尺寸</strong>
+        375×812 逻辑像素 · 支持深色模式
+    </div>
+</body>
+</html>

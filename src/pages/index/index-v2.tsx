@@ -1,5 +1,5 @@
 /**
- * 基金研报页面 - index-v2 电脑端优化版
+ * 基金研报页面 - index-v2 电脑端优化版 (v2.1)
  * Mac 13 寸优化 · 现代简约风格 · 盈米 MCP 数据 · 完整研报生成
  */
 
@@ -297,6 +297,11 @@ ${(data.top_stocks || []).map((stock: any, i: number) => `| ${i+1} | ${stock.cod
         <View className="browser-url">
           🔒 https://fund-master.pages.dev/#/pages/index/index-v2
         </View>
+      </View>
+
+      {/* 版本标识 - 用于确认部署 */}
+      <View style={{ textAlign: 'center', padding: '8px', background: '#FF9500', color: 'white', fontSize: '12px', fontWeight: '600' }}>
+        🎉 v2.1 电脑端优化版已上线 · 三栏布局 · Mac 13 寸优化
       </View>
 
       {/* 主内容布局 - 三栏设计 */}

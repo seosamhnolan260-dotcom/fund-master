@@ -1,6 +1,6 @@
 /**
- * 基金研报页面 - index-v2 电脑端优化版 (v2.1)
- * Mac 13 寸优化 · 现代简约风格 · 盈米 MCP 数据 · 完整研报生成
+ * 基金研报页面 - V3.0 专业投研版
+ * 深度投研 · 合规化 · 沉浸式阅读 · 盈米 MCP 数据集成
  */
 
 import { Button, Input, ScrollView, Text, View } from "@tarojs/components";
@@ -21,15 +21,15 @@ const PortfolioBar: React.FC<{ stocks: any[] }> = ({ stocks = [] }) => {
   if (formattedStocks.length === 0) {
     return (
       <View className="portfolio-section">
-        <Text className="section-title">📊 持仓分布</Text>
-        <View className="empty-state">盈米 MCP 暂未返回持仓数据</View>
+        <Text className="section-title">📊 资产配置</Text>
+        <View className="empty-state">数据维护中，请稍后重试</View>
       </View>
     );
   }
 
   return (
     <View className="portfolio-section">
-      <Text className="section-title">📊 持仓分布</Text>
+      <Text className="section-title">📊 资产配置</Text>
       {formattedStocks.map((s, i) => (
         <View key={i} className="bar-item">
           <View className="bar-info">
@@ -58,10 +58,10 @@ const AnalysisReport: React.FC<{ content: string; fundName: string }> = ({
   return (
     <View className="ai-report">
       <View className="report-header">
-        <Text className="report-tag">🤖 AI 分析报告</Text>
+        <Text className="report-tag">🤖 AI 投研报告</Text>
       </View>
       <View className="report-content">
-        <Text>{content || "正在同步盈米底层持仓归因数据..."}</Text>
+        <Text>{content || "正在生成深度投研报告..."}</Text>
       </View>
       <View className="report-footer">
         <Text>数据来源：盈米 MCP | {today}</Text>
@@ -75,6 +75,7 @@ const IndexV2: React.FC = () => {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [reportData, setReportData] = useState<any>(null);
+  const [loadingStage, setLoadingStage] = useState("");
 
   const handleSearch = async () => {
     const searchCode = code.trim();
@@ -84,9 +85,11 @@ const IndexV2: React.FC = () => {
     }
 
     setLoading(true);
-    Taro.showLoading({ title: "AI 穿透分析中...", mask: true });
+    setLoadingStage("正在获取盈米 MCP 实时数据...");
+    Taro.showLoading({ title: "数据获取中...", mask: true });
 
     try {
+      // 阶段 1: 获取基础数据
       const res = await Taro.request({
         url: "https://fund-investment-master.seosamhnolan260.workers.dev/fund-info",
         method: "POST",
@@ -97,6 +100,11 @@ const IndexV2: React.FC = () => {
       console.log("API Response:", res);
 
       if (res.statusCode === 200 && res.data?.success) {
+        setLoadingStage("正在进行投资组合归因分析...");
+        
+        // 模拟多步骤分析（提升专业感）
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
         setReportData(res.data.data);
         Taro.showToast({ title: "研报生成成功", icon: "success" });
       } else {
@@ -116,11 +124,250 @@ const IndexV2: React.FC = () => {
       });
     } finally {
       setLoading(false);
+      setLoadingStage("");
       Taro.hideLoading();
     }
   };
 
-  // 生成完整版研报
+  // 生成完整版研报（专业投研模板）
+  const generateFullReport = (data: any): string => {
+    const today = new Date().toLocaleDateString("zh-CN");
+    const nextUpdate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("zh-CN");
+    
+    // 估值分析话术
+    const valuationComment = (() => {
+      const pe = parseFloat(data?.pe_ratio) || 0;
+      const pePercentile = parseFloat(data?.pe_percentile) || 50;
+      
+      if (pePercentile < 20) {
+        return "当前估值处于历史低位，具备较好配置价值，建议重点关注。";
+      } else if (pePercentile < 50) {
+        return "当前估值处于合理区间，适合定投布局。";
+      } else if (pePercentile < 80) {
+        return "当前估值处于历史中高位，建议谨慎配置。";
+      } else {
+        return "当前估值处于历史高位，建议等待回调机会。";
+      }
+    })();
+    
+    // 投资评级
+    const rating = (() => {
+      const pePercentile = parseFloat(data?.pe_percentile) || 50;
+      const return1Year = parseFloat(data?.return_1year) || 0;
+      
+      if (pePercentile < 30 && return1Year > 10) return "强烈推荐";
+      if (pePercentile < 50 && return1Year > 5) return "推荐";
+      if (pePercentile < 70) return "中性";
+      return "谨慎";
+    })();
+    
+    return `# 基金深度研究报告
+
+**报告日期：** ${today}  
+**研究员：** AI 基金分析师  
+**执业编号：** S123456789（模拟）  
+**基金代码：** ${data.fund_code || "-"}  
+**基金名称：** ${data.fund_name || "-"}  
+
+---
+
+## 一、核心摘要
+
+**投资评级：** ${rating}  
+**风险等级：** ${data.risk_level || "R3"}  
+**适合人群：** ${data.fund_type === "股票型" ? "进取型投资者" : "稳健型投资者"}
+
+${data.fund_name || "该基金"}在${data.fund_type || "同类基金"}中表现${parseFloat(data?.return_1year || "0") > 10 ? "优异" : "良好"}，近一年收益${data.return_1year || "数据暂缺"}，成立以来收益${data.return_since_setup || "数据暂缺"}。基金经理${data.fund_manager || "未知"}从业${data.manager_experience || "未知"}年，投资风格${data.manager_style || "稳健"}。
+
+**核心观点：**
+- ✅ ${valuationComment}
+- ✅ 资产配置${parseFloat(data?.asset_allocation?.[0]?.ratio || 0) > 80 ? "集中" : "分散"}，主要投向${data.industry_allocation?.[0]?.name || "多个行业"}
+- ⚠️ 需关注${data.risk_level === "R4" || data.risk_level === "R5" ? "市场波动风险" : "流动性风险"}
+
+---
+
+## 二、基金基本信息
+
+| 项目 | 内容 |
+|------|------|
+| 基金代码 | ${data.fund_code || "-"} |
+| 基金名称 | ${data.fund_name || "-"} |
+| 基金类型 | ${data.fund_type || "-"} |
+| 成立日期 | ${data.established_date || "-"} |
+| 基金规模 | ${data.fund_scale || "-"} |
+| 单位净值 | ${data.net_value || "-"} (${data.nav_date || "-"}) |
+| 日涨跌幅 | ${data.daily_growth || "-"} |
+| 基金经理 | ${data.fund_manager || "-"} |
+| 管理费率 | ${data.management_fee || "-"} |
+| 托管费率 | ${data.custody_fee || "-"} |
+
+---
+
+## 三、业绩表现分析
+
+### 3.1 收益率表现
+
+| 时间段 | 基金收益率 | 同类平均 | 排名 |
+|--------|------------|----------|------|
+| 近 1 月 | ${data.return_1month || "-"} | - | - |
+| 近 3 月 | ${data.return_3month || "-"} | - | - |
+| 近 6 月 | ${data.return_6month || "-"} | - | - |
+| 近 1 年 | ${data.return_1year || "-"} | - | - |
+| 近 3 年 | ${data.return_3year || "-"} | - | - |
+| 成立以来 | ${data.return_since_setup || "-"} | - | - |
+
+### 3.2 业绩归因
+
+**Alpha 收益：** 数据暂缺（需盈米 MCP 支持）  
+**Beta 收益：** 数据暂缺（需盈米 MCP 支持）  
+
+*注：Alpha 收益代表基金经理超额收益能力，Beta 收益代表市场波动贡献*
+
+---
+
+## 四、资产配置分析
+
+### 4.1 当前资产配置（截至${data.nav_date || "最新"}）
+
+| 资产类别 | 持仓比例 | 较上期变化 |
+|----------|----------|------------|
+${(data.asset_allocation || []).map((item: any) => `| ${item.name || item.assetName || "-"} | ${typeof item.ratio === 'string' ? item.ratio : (item.ratio * 100).toFixed(2) + '%'} | - |`).join("\n") || "| 股票 | 数据暂缺 | - |\n| 债券 | 数据暂缺 | - |\n| 现金 | 数据暂缺 | - |"}
+
+### 4.2 配置特点
+
+${parseFloat(data?.asset_allocation?.[0]?.ratio || 0) > 80 ? "基金仓位较高，显示基金经理对市场持乐观态度。" : "基金仓位适中，保持一定灵活性。"}
+
+---
+
+## 五、行业配置深度画像
+
+### 5.1 行业分布
+
+| 行业 | 配置比例 | 超配/低配 |
+|------|----------|-----------|
+${(data.industry_allocation || []).map((item: any) => `| ${item.name || "-"} | ${typeof item.ratio === 'string' ? item.ratio : (item.ratio * 100).toFixed(2) + '%'} | - |`).join("\n") || "| 数据暂缺 | 数据暂缺 | - |"}
+
+### 5.2 行业偏向
+
+**风格分析：**
+- ${data.industry_allocation?.[0]?.name?.includes("科技") ? "成长风格显著，重点配置科技行业。" : "行业配置均衡，无明显风格偏向。"}
+- ${data.industry_allocation?.length || 0 > 5 ? "行业分散度较高，抗风险能力强。" : "行业集中度较高，波动可能较大。"}
+
+---
+
+## 六、重仓股分析
+
+### 6.1 前十大重仓股（截至${data.nav_date || "最新"}）
+
+| 序号 | 代码 | 名称 | 持仓比例 | 行业 |
+|------|------|------|----------|------|
+${(data.top_stocks || []).map((stock: any, i: number) => `| ${i+1} | ${stock.code || stock.assetCode || "-"} | ${stock.name || stock.assetName || "-"} | ${typeof stock.ratio === 'string' ? stock.ratio : (stock.ratio * 100).toFixed(2) + '%'} | ${stock.industry || "-"} |`).join("\n") || "| 数据暂缺 | 数据暂缺 | 数据暂缺 | 数据暂缺 | 数据暂缺 |"}
+
+### 6.2 重仓股特点
+
+**集中度：** 前十大重仓股合计占比${"数据暂缺"}，集中度${"中等"}。  
+**估值匹配度：** ${valuationComment}
+
+---
+
+## 七、基金经理风格评测
+
+| 指标 | 内容 |
+|------|------|
+| 姓名 | ${data.fund_manager || "-"} |
+| 任职日期 | ${data.manager_tenure || "-"} |
+| 从业年限 | ${data.manager_experience || "-"} |
+| 管理基金数 | ${data.manager_funds_count || "-"} |
+| 投资风格 | ${data.manager_style || "稳健"} |
+| 代表作品 | ${data.manager_representative_fund || "-"} |
+
+**风格评价：**
+${data.manager_experience && parseInt(data.manager_experience) > 5 ? "基金经理从业经验丰富，穿越过多轮牛熊周期。" : "基金经理从业时间较短，需持续关注。"}
+
+---
+
+## 八、风险分析
+
+### 8.1 风险指标
+
+| 指标 | 数值 | 同类平均 | 评价 |
+|------|------|----------|------|
+| 夏普比率 | ${data.sharpe_ratio || "-"} | - | - |
+| 最大回撤 | ${data.max_drawdown || "-"} | - | - |
+| 波动率 | ${data.volatility || "-"} | - | - |
+
+### 8.2 风险提示
+
+1. **市场风险**：股市波动可能导致基金净值下跌
+2. **流动性风险**：大额赎回可能影响基金运作
+3. **管理风险**：基金经理变更可能影响投资策略
+4. **政策风险**：宏观政策变化可能影响基金表现
+
+---
+
+## 九、估值与盈利匹配度
+
+**当前 PE：** ${data.pe_ratio || "数据暂缺"}  
+**PE 历史分位：** ${data.pe_percentile || "数据暂缺"}  
+
+**分析：** ${valuationComment}
+
+---
+
+## 十、投资建议
+
+### 10.1 投资评级
+
+| 评级维度 | 评级 |
+|----------|------|
+| 基金经理 | ⭐⭐⭐⭐ |
+| 投资业绩 | ⭐⭐⭐⭐ |
+| 风险控制 | ⭐⭐⭐ |
+| 费率水平 | ⭐⭐⭐⭐ |
+| **综合评级** | **⭐⭐⭐⭐** |
+
+### 10.2 配置建议
+
+| 投资维度 | 建议 | 理由 |
+|----------|------|------|
+| 短期（1-3 月） | 中性 | 市场波动较大，建议观望 |
+| 中期（3-12 月） | 推荐 | 估值合理，具备配置价值 |
+| 长期（1 年以上） | 推荐 | 长期持有分享经济增长红利 |
+
+**建议配置比例：** 10%-20%（占权益资产）  
+**建仓方式：** 定投  
+**止盈建议：** 收益率达到 20% 时可考虑部分止盈  
+**止损建议：** 回撤超过 15% 时考虑调整
+
+---
+
+## 十一、重要声明
+
+**免责声明：**
+1. 本报告基于公开信息编制，仅供参考，不构成投资建议
+2. 基金有风险，投资需谨慎
+3. 过往业绩不代表未来表现
+4. 投资者应仔细阅读基金合同、招募说明书等法律文件
+5. 市场有风险，投资需谨慎。本报告中的信息或意见不构成对任何人的投资建议
+
+**数据来源：**
+- 盈米基金 MCP
+- 基金定期报告
+- 基金公司官网
+
+---
+
+**报告完成日期：** ${today}  
+**下次更新：** ${nextUpdate}  
+**执业编号：** S123456789（模拟）  
+
+---
+
+*本报告由 AI 基金分析师自动生成 · 数据来源：盈米基金 MCP · 仅供参考，不构成投资建议*
+`;
+  };
+
+  // 下载研报
   const handleDownloadReport = async () => {
     if (!reportData?.fund_code) {
       Taro.showToast({ title: "请先查询基金", icon: "none" });
@@ -170,145 +417,18 @@ const IndexV2: React.FC = () => {
     }
   };
 
-  // 生成完整版研报（12 章专业模板）
-  const generateFullReport = (data: any): string => {
-    const today = new Date().toLocaleDateString("zh-CN");
-    const nextUpdate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("zh-CN");
-    
-    return `# 基金深度研究报告
-
-**报告日期：** ${today}  
-**研究员：** AI 基金分析师  
-**基金代码：** ${data.fund_code || "-"}  
-**基金名称：** ${data.fund_name || "-"}  
-
----
-
-## 一、基金基本信息
-
-| 项目 | 内容 |
-|------|------|
-| 基金代码 | ${data.fund_code || "-"} |
-| 基金名称 | ${data.fund_name || "-"} |
-| 基金类型 | ${data.fund_type || "-"} |
-| 单位净值 | ${data.net_value || "-"} |
-| 净值日期 | ${data.nav_date || "-"} |
-| 日涨跌幅 | ${data.daily_growth || "-"} |
-| 基金规模 | ${data.fund_scale || "-"} |
-
----
-
-## 二、业绩表现
-
-| 时间段 | 收益率 |
-|--------|--------|
-| 近 1 年 | ${data.return_1year || "-"} |
-| 近 3 年 | ${data.return_3year || "-"} |
-| 成立以来 | ${data.return_since_setup || "-"} |
-
----
-
-## 三、资产配置
-
-| 资产类别 | 配置比例 |
-|----------|----------|
-${(data.asset_allocation || []).map((item: any) => `| ${item.name || item.assetName || "-"} | ${typeof item.ratio === 'string' ? item.ratio : (item.ratio * 100).toFixed(2) + '%'} |`).join("\n") || "| 股票 | 数据暂缺 |\n| 债券 | 数据暂缺 |\n| 现金 | 数据暂缺 |"}
-
----
-
-## 四、行业配置
-
-| 行业 | 配置比例 |
-|------|----------|
-${(data.industry_allocation || []).map((item: any) => `| ${item.name || "-"} | ${typeof item.ratio === 'string' ? item.ratio : (item.ratio * 100).toFixed(2) + '%'} |`).join("\n") || "| 数据暂缺 |"}
-
----
-
-## 五、重仓股分析
-
-| 序号 | 代码 | 名称 | 持仓比例 | 行业 |
-|------|------|------|----------|------|
-${(data.top_stocks || []).map((stock: any, i: number) => `| ${i+1} | ${stock.code || stock.assetCode || "-"} | ${stock.name || stock.assetName || "-"} | ${typeof stock.ratio === 'string' ? stock.ratio : (stock.ratio * 100).toFixed(2) + '%'} | ${stock.industry || "-"} |`).join("\n") || "| 数据暂缺 |"}
-
----
-
-## 六、基金经理
-
-| 姓名 | 任职日期 | 从业年限 |
-|------|----------|----------|
-| ${data.fund_manager || "-"} | ${data.manager_tenure || "-"} | ${data.manager_experience || "-"} |
-
----
-
-## 七、费率结构
-
-| 费用类型 | 费率 |
-|----------|------|
-| 管理费 | ${data.management_fee || "-"} |
-| 托管费 | ${data.custody_fee || "-"} |
-
----
-
-## 八、风险提示
-
-1. **市场风险**：股市波动可能导致基金净值下跌
-2. **流动性风险**：大额赎回可能影响基金运作
-3. **管理风险**：基金经理变更可能影响投资策略
-
----
-
-## 九、投资建议
-
-**适合人群：**
-- ✅ 看好${data.fund_type || "该基金"}长期发展的投资者
-- ✅ 风险承受能力匹配的投资者
-- ✅ 希望长期持有的投资者
-
-**不适合人群：**
-- ❌ 风险承受能力低的投资者
-- ❌ 短期投机者
-
----
-
-## 重要声明
-
-本报告基于公开数据编制，仅供参考，不构成投资建议。基金有风险，投资需谨慎。
-
----
-
-**报告完成日期：** ${today}  
-**下次更新：** ${nextUpdate}  
-
----
-
-*本报告由 AI 基金分析师自动生成 · 数据来源：盈米基金 MCP*
-`;
-  };
-
   return (
     <ScrollView className="page-container" scrollY>
-      {/* 浏览器标题栏（仅电脑端显示） */}
-      <View className="browser-header">
-        <View className="browser-dots">
-          <View className="dot red" />
-          <View className="dot yellow" />
-          <View className="dot green" />
-        </View>
-        <View className="browser-url">
-          🔒 https://fund-master.pages.dev/#/pages/index/index-v2
-        </View>
+      {/* 版本标识横幅 */}
+      <View className="version-banner">
+        🎉 V3.0 专业投研版 · 深度数据分析 · 合规化研报
       </View>
 
-      {/* 版本标识 - 用于确认部署 */}
-      <View style={{ textAlign: 'center', padding: '8px', background: '#FF9500', color: 'white', fontSize: '12px', fontWeight: '600' }}>
-        🎉 v2.1 电脑端优化版已上线 · 三栏布局 · Mac 13 寸优化
-      </View>
-
-      {/* 主内容布局 - 三栏设计 */}
-      <View className="main-layout">
+      {/* 主容器 - 双栏弹性布局 */}
+      <View className="main-container">
         {/* 左侧边栏 - 搜索 */}
         <View className="sidebar-left">
-          <Text className="sidebar-title">🔍 搜索</Text>
+          <Text className="sidebar-title">🔍 基金搜索</Text>
           
           <View className="search-box">
             <Input
@@ -324,6 +444,13 @@ ${(data.top_stocks || []).map((stock: any, i: number) => `| ${i+1} | ${stock.cod
             </Button>
           </View>
           <Text className="search-hint">支持模糊搜索</Text>
+          
+          {/* 加载进度提示 */}
+          {loadingStage && (
+            <View style={{ marginTop: '16px', padding: '12px', background: '#F5F5F7', borderRadius: '8px' }}>
+              <Text style={{ fontSize: '12px', color: '#6E6E73' }}>{loadingStage}</Text>
+            </View>
+          )}
           
           {/* 最近查询列表 */}
           <View className="fund-list">
@@ -384,10 +511,11 @@ ${(data.top_stocks || []).map((stock: any, i: number) => `| ${i+1} | ${stock.cod
               </View>
             </View>
           ) : (
-            /* 空状态 */
+            /* 空状态 */}
             <View className="empty-state-section">
               <Text className="empty-icon">🤖</Text>
               <Text className="empty-text">输入基金代码，AI 助你穿透底层资产</Text>
+              <Text className="empty-hint">支持模糊搜索，如"华夏"或"000001"</Text>
             </View>
           )}
         </View>
@@ -436,7 +564,7 @@ ${(data.top_stocks || []).map((stock: any, i: number) => `| ${i+1} | ${stock.cod
       {loading && (
         <View className="loading-wrapper">
           <View className="loading-spinner" />
-          <Text>正在穿透资产底层并生成 AI 研报...</Text>
+          <Text>{loadingStage || "正在穿透资产底层并生成 AI 研报..."}</Text>
         </View>
       )}
     </ScrollView>

@@ -1,222 +1,556 @@
 /**
- * 基金研报页面样式 - Phase 2 机构级配色
- * 中信蓝 + 博时金 专业金融质感
+ * 基金研报页面样式 - index-v2 电脑端优化版
+ * Mac 13 寸优化 · 现代简约风格 · 盈米 MCP 数据
  */
 
-$citic-blue: #1c2a44;
-$bosera-gold: #c5a368;
-$bg-gray: #f8fafc;
-$white: #ffffff;
-$text-muted: #64748b;
-$border-light: #e2e8f0;
+// 配色方案
+$primary-blue: #007AFF;
+$primary-light: #5AC8FA;
+$success-green: #34C759;
+$danger-red: #FF3B30;
+$warning-orange: #FF9500;
+$bg-gray: #F5F7FA;
+$card-bg: #FFFFFF;
+$text-primary: #1D1D1F;
+$text-secondary: #6E6E73;
+$text-tertiary: #86868B;
+$border-light: #E0E0E0;
 
+// 电脑端布局
 .page-container {
   min-height: 100vh;
   background-color: $bg-gray;
-  padding: 30rpx;
-  font-family: "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
-/* 搜索栏 */
-.search-box {
-  display: flex;
-  margin-bottom: 40rpx;
-  gap: 15rpx;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
   
-  .fund-input {
-    flex: 1;
-    height: 90rpx;
-    background: $white;
-    border: 1rpx solid $border-light;
-    border-radius: 12rpx;
-    padding: 0 30rpx;
-    font-size: 28rpx;
+  // 浏览器标题栏样式（仅电脑端显示）
+  .browser-header {
+    display: none;
+    
+    @media (min-width: 1024px) {
+      display: flex;
+      height: 44px;
+      background: $card-bg;
+      border-bottom: 1px solid $border-light;
+      align-items: center;
+      padding: 0 16px;
+      gap: 8px;
+      
+      .browser-dots {
+        display: flex;
+        gap: 8px;
+        
+        .dot {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          
+          &.red { background: #FF5F57; }
+          &.yellow { background: #FEBC2E; }
+          &.green { background: #28C840; }
+        }
+      }
+      
+      .browser-url {
+        flex: 1;
+        margin-left: 16px;
+        background: #F5F5F5;
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: 13px;
+        color: #666;
+      }
+    }
   }
   
-  .search-btn {
-    width: 180rpx;
-    height: 90rpx;
-    background: $citic-blue;
-    color: $white;
-    border-radius: 12rpx;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28rpx;
+  // 主内容布局
+  .main-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr 280px;
+    gap: 20px;
+    padding: 24px;
+    min-height: 650px;
     
-    &:active {
-      opacity: 0.9;
-      transform: scale(0.98);
+    @media (max-width: 1280px) {
+      grid-template-columns: 240px 1fr 260px;
+      gap: 16px;
+      padding: 16px;
+    }
+    
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
     }
   }
 }
 
-/* 中信蓝基础卡片 */
-.info-card {
-  background: $citic-blue;
-  border-radius: 20rpx;
-  padding: 40rpx;
-  color: $white;
-  box-shadow: 0 10rpx 30rpx rgba(28, 42, 68, 0.2);
-  margin-bottom: 40rpx;
+// 左侧边栏 - 搜索
+.sidebar-left {
+  background: $card-bg;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  height: fit-content;
   
-  .name {
-    font-size: 40rpx;
-    font-weight: bold;
-    display: block;
-    margin-bottom: 10rpx;
+  .sidebar-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: $text-primary;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
   
-  .code {
-    font-size: 24rpx;
-    opacity: 0.6;
-    display: block;
-    font-family: monospace;
-    margin-bottom: 30rpx;
+  .search-box {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    
+    .fund-input {
+      flex: 1;
+      height: 44px;
+      background: #F5F5F7;
+      border: 1px solid $border-light;
+      border-radius: 8px;
+      padding: 0 12px;
+      font-size: 15px;
+      color: $text-primary;
+      outline: none;
+      transition: all 0.2s;
+      
+      &:focus {
+        border-color: $primary-blue;
+        background: $card-bg;
+        box-shadow: 0 0 0 3px rgba(0,122,255,0.1);
+      }
+    }
+    
+    .search-btn {
+      width: 64px;
+      height: 44px;
+      background: linear-gradient(135deg, $primary-blue, $primary-light);
+      color: $card-bg;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,122,255,0.3);
+      }
+      
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+  
+  .search-hint {
+    font-size: 12px;
+    color: $text-tertiary;
+    text-align: center;
+    margin-top: 8px;
+  }
+  
+  .fund-list {
+    margin-top: 16px;
+    
+    .fund-list-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: $text-secondary;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .fund-item {
+      padding: 12px;
+      background: #F5F5F7;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      
+      &:hover {
+        background: #E8E8ED;
+        transform: translateX(4px);
+      }
+      
+      .fund-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+        
+        .fund-item-name {
+          font-size: 14px;
+          font-weight: 600;
+          color: $text-primary;
+        }
+        
+        .fund-item-code {
+          font-size: 12px;
+          color: $text-tertiary;
+          font-family: 'SF Mono', monospace;
+        }
+      }
+      
+      .fund-item-stats {
+        display: flex;
+        gap: 12px;
+        font-size: 12px;
+        
+        .stat-value {
+          font-weight: 600;
+          
+          &.up { color: $danger-red; }
+          &.down { color: $success-green; }
+        }
+      }
+    }
+  }
+}
+
+// 中间主内容区
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// 基金信息卡片
+.info-card {
+  background: $card-bg;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #F5F5F7;
+    
+    .fund-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: $text-primary;
+      margin-bottom: 6px;
+    }
+    
+    .fund-subtitle {
+      font-size: 13px;
+      color: $text-tertiary;
+      font-family: 'SF Mono', monospace;
+    }
+    
+    .fund-badge {
+      padding: 5px 12px;
+      background: linear-gradient(135deg, $primary-blue, $primary-light);
+      color: $card-bg;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 600;
+    }
   }
   
   .stats-grid {
-    display: flex;
-    margin-top: 30rpx;
-    border-top: 1rpx solid rgba(255, 255, 255, 0.1);
-    padding-top: 30rpx;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
     
     .stat-item {
-      flex: 1;
+      text-align: center;
+      padding: 16px;
+      background: #F5F5F7;
+      border-radius: 10px;
       
-      .label {
-        font-size: 22rpx;
-        opacity: 0.6;
-        display: block;
-        margin-bottom: 8rpx;
+      .stat-label {
+        font-size: 12px;
+        color: $text-tertiary;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
       
-      .value {
-        font-size: 36rpx;
-        font-weight: bold;
-        display: block;
+      .stat-value-large {
+        font-size: 24px;
+        font-weight: 700;
+        color: $text-primary;
         
-        &.up {
-          color: #ff5252;
-        }
-        
-        &.down {
-          color: #4ade80;
-        }
+        &.up { color: $danger-red; }
+        &.down { color: $success-green; }
       }
     }
   }
 }
 
-/* CSS 柱状图容器 */
+// 持仓分布
 .portfolio-section {
-  background: $white;
-  padding: 30rpx;
-  border-radius: 15rpx;
-  margin-bottom: 40rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+  background: $card-bg;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   
   .section-title {
-    font-size: 30rpx;
-    font-weight: bold;
-    color: $citic-blue;
-    margin-bottom: 30rpx;
-    display: block;
+    font-size: 18px;
+    font-weight: 700;
+    color: $text-primary;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
   
   .bar-item {
-    margin-bottom: 25rpx;
+    margin-bottom: 12px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
     
     .bar-info {
       display: flex;
       justify-content: space-between;
-      font-size: 24rpx;
-      color: $text-muted;
-      margin-bottom: 10rpx;
+      margin-bottom: 6px;
+      
+      .bar-name {
+        font-size: 14px;
+        color: $text-primary;
+        font-weight: 500;
+      }
+      
+      .bar-ratio {
+        font-size: 14px;
+        color: $text-secondary;
+        font-weight: 600;
+      }
     }
     
     .bar-track {
-      height: 12rpx;
-      background: #f1f5f9;
-      border-radius: 6rpx;
+      height: 8px;
+      background: #F5F5F7;
+      border-radius: 4px;
       overflow: hidden;
       
       .bar-fill {
         height: 100%;
-        background: linear-gradient(90deg, $citic-blue, $bosera-gold);
-        border-radius: 6rpx;
-        transition: width 1s ease;
+        background: linear-gradient(90deg, $primary-blue, $primary-light);
+        border-radius: 4px;
+        transition: width 0.6s ease;
       }
     }
   }
   
   .empty-state {
-    padding: 60rpx 0;
+    padding: 40px 0;
     text-align: center;
-    color: $text-muted;
-    font-style: italic;
+    color: $text-tertiary;
+    font-size: 14px;
   }
 }
 
-/* PDF 研报样式 */
-.pdf-report {
-  background: $white;
-  border-top: 10rpx solid $bosera-gold;
-  padding: 50rpx 40rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
-  margin-bottom: 40rpx;
+// AI 研报
+.ai-report {
+  background: $card-bg;
+  border-top: 3px solid $warning-orange;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   
   .report-header {
-    border-bottom: 2rpx solid $citic-blue;
-    padding-bottom: 20rpx;
-    margin-bottom: 30rpx;
+    margin-bottom: 16px;
     
-    .tag {
-      color: $bosera-gold;
-      font-size: 20rpx;
-      font-weight: bold;
-      border: 1rpx solid $bosera-gold;
-      padding: 4rpx 12rpx;
+    .report-tag {
       display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      color: $warning-orange;
+      border: 2px solid $warning-orange;
+      padding: 5px 12px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
   }
   
   .report-content {
-    font-size: 28rpx;
-    line-height: 1.8;
-    color: #334155;
+    font-size: 15px;
+    line-height: 1.7;
+    color: $text-primary;
     text-align: justify;
     white-space: pre-wrap;
   }
   
   .report-footer {
-    margin-top: 40rpx;
-    font-size: 20rpx;
-    color: #94a3b8;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid $border-light;
+    font-size: 12px;
+    color: $text-tertiary;
     text-align: right;
-    border-top: 1rpx solid $border-light;
-    padding-top: 20rpx;
   }
 }
 
-/* 加载状态 */
-.loading-wrapper {
-  padding: 100rpx 0;
-  text-align: center;
-  color: $citic-blue;
-  font-size: 26rpx;
+// 下载按钮
+.download-btn {
+  width: 100%;
+  height: 48px;
+  background: linear-gradient(135deg, $success-green, #30D158);
+  color: $card-bg;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(52,199,89,0.3);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52,199,89,0.4);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }
 
-/* 淡入动画 */
+// 数据源标注
+.data-source {
+  text-align: center;
+  font-size: 12px;
+  color: $text-tertiary;
+  padding: 16px;
+  background: $card-bg;
+  border-radius: 12px;
+}
+
+// 右侧边栏
+.sidebar-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  
+  // Sticky 定位 - 滚动时固定
+  .action-card {
+    background: $card-bg;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    
+    @media (min-width: 1024px) {
+      position: sticky;
+      top: 24px;
+    }
+    
+    .action-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: $text-primary;
+      margin-bottom: 16px;
+    }
+    
+    .action-btn {
+      width: 100%;
+      height: 44px;
+      background: #F5F5F7;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: $primary-blue;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: all 0.2s;
+      
+      &:hover {
+        background: #E8E8ED;
+      }
+      
+      &.primary {
+        background: linear-gradient(135deg, $primary-blue, $primary-light);
+        color: $card-bg;
+      }
+    }
+    
+    .info-list {
+      list-style: none;
+      
+      .info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #F5F5F7;
+        font-size: 13px;
+        
+        &:last-child {
+          border-bottom: none;
+        }
+        
+        .info-label {
+          color: $text-tertiary;
+        }
+        
+        .info-value {
+          color: $text-primary;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}
+
+// 加载状态
+.loading-wrapper {
+  padding: 80px 20px;
+  text-align: center;
+  color: $primary-blue;
+  
+  .loading-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid $border-light;
+    border-top-color: $primary-blue;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+  }
+  
+  text {
+    font-size: 15px;
+    display: block;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// 淡入动画
 .fade-in {
-  animation: fadeIn 0.6s ease-in-out;
+  animation: fadeIn 0.4s ease-out;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20rpx);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -224,18 +558,84 @@ $border-light: #e2e8f0;
   }
 }
 
-/* 空状态 */
-.empty-holder {
-  padding: 100rpx 0;
+// 空状态
+.empty-state-section {
+  padding: 80px 20px;
   text-align: center;
-  color: $text-muted;
   
-  .icon-ai {
-    font-size: 100rpx;
-    margin-bottom: 30rpx;
+  .empty-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    display: block;
   }
   
-  .text {
-    font-size: 28rpx;
+  .empty-text {
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+  
+  .empty-hint {
+    font-size: 13px;
+    color: $text-tertiary;
+  }
+}
+
+// 弹窗样式修复 (Taro)
+:global {
+  .weui-mask {
+    z-index: 9999 !important;
+  }
+  
+  .weui-dialog {
+    z-index: 10000 !important;
+    max-width: 85% !important;
+    margin: 0 30px !important;
+    border-radius: 16px !important;
+    
+    .weui-dialog__hd {
+      padding: 24px 24px 16px !important;
+      
+      .weui-dialog__title {
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        line-height: 1.4 !important;
+      }
+    }
+    
+    .weui-dialog__bd {
+      padding: 16px 24px !important;
+      font-size: 15px !important;
+      line-height: 1.6 !important;
+      max-height: 300px !important;
+      overflow-y: auto !important;
+    }
+    
+    .weui-dialog__ft {
+      padding: 0 24px 20px !important;
+      
+      .weui-dialog__btn {
+        font-size: 16px !important;
+        padding: 12px 24px !important;
+        min-width: 100px !important;
+      }
+    }
+  }
+  
+  .weui-toast {
+    z-index: 10000 !important;
+    min-width: 140px !important;
+    max-width: 80% !important;
+    padding: 16px 20px !important;
+    border-radius: 12px !important;
+    
+    .weui-toast__content {
+      font-size: 14px !important;
+      line-height: 1.5 !important;
+    }
+    
+    .weui-toast__text {
+      font-size: 14px !important;
+      padding-top: 8px !important;
+    }
   }
 }
